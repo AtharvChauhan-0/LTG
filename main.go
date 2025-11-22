@@ -38,7 +38,7 @@ func worker(id int, url string, requests int, wg *sync.WaitGroup) {
 }
 
 func main() {
-	url := "https://httpbin.org/get"
+	url := "https://ghnbin.com/get"
 	virtualUsers := 20
 	requestsPerUser := 10
 

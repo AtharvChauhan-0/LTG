@@ -16,27 +16,49 @@ type LogEntry struct {
 	Method     string    `json:"method"`
 }
 
-// Global log file handle
-var logFile *os.File
+var (
+	logChan chan LogEntry
+	logFile *os.File
+)
 
 func InitLogger() error {
 	var err error
-	logFile, err = os.Create("requests.log")
-	return err
-}
 
-func CloseLogger() {
-	if logFile != nil {
-		logFile.Close()
+	// Create or overwrite existing log file
+	logFile, err = os.Create("requests.log")
+	if err != nil {
+		return err
 	}
+
+	// Buffered channel (async logging)
+	logChan = make(chan LogEntry, 10000)
+
+	// Logger goroutine
+	go func() {
+		for entry := range logChan {
+			jsonBytes, _ := json.Marshal(entry)
+			logFile.Write(jsonBytes)
+			logFile.Write([]byte("\n"))
+		}
+	}()
+
+	return nil
 }
 
 func WriteLog(entry LogEntry) {
-	if logFile == nil {
-		return
+	if logChan != nil {
+		logChan <- entry
+	}
+}
+
+func CloseLogger() {
+	// Stop accepting new entries
+	if logChan != nil {
+		close(logChan)
 	}
 
-	jsonBytes, _ := json.Marshal(entry)
-	logFile.Write(jsonBytes)
-	logFile.Write([]byte("\n"))
+	// Close file AFTER all remaining logs finish writing
+	if logFile != nil {
+		logFile.Close()
+	}
 }
