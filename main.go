@@ -56,7 +56,7 @@ func worker(id int, url string, requests int, wg *sync.WaitGroup) {
 
 func main() {
 	// Configuration
-	url := "https://httpbin.org/get" // Changed to working endpoint
+	url := "https://kharcha.harshjain.me" // Changed to working endpoint
 	virtualUsers := 20
 	requestsPerUser := 10
 	totalRequests := virtualUsers * requestsPerUser
